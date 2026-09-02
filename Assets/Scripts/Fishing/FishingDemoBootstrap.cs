@@ -139,7 +139,8 @@ namespace CanaryFishing.Fishing
             rect.anchoredPosition = position;
             rect.sizeDelta = new Vector2(600f, 30f);
             Text text = textObject.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            // Unity 6 sustituyó Arial.ttf como fuente builtin runtime.
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 18;
             text.color = Color.white;
             text.text = value;
