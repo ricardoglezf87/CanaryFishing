@@ -25,6 +25,7 @@ namespace CanaryFishing.Fishing
 
         [Header("Water")]
         [SerializeField] private float waterSurfaceY;
+        [SerializeField, Min(0.01f)] private float minimumSwimmingDepth = 0.25f;
         [SerializeField, Min(0f)] private float depthTolerance = 1f;
         [SerializeField, Min(0f)] private float attractionDistance = 1.5f;
         [SerializeField, Min(0f)] private float attractionSpeed = 1f;
@@ -249,10 +250,16 @@ namespace CanaryFishing.Fishing
 
         private void MoveTowardsLure()
         {
+            Vector3 target = lure.position;
+            // Puede subir para buscar el señuelo, pero nunca salir del agua.
+            target.y = Mathf.Min(target.y, waterSurfaceY - minimumSwimmingDepth);
             transform.position = Vector3.MoveTowards(
                 transform.position,
-                lure.position,
+                target,
                 attractionSpeed * Time.deltaTime);
+            Vector3 position = transform.position;
+            position.y = Mathf.Min(position.y, waterSurfaceY - minimumSwimmingDepth);
+            transform.position = position;
         }
 
         private void ApplyFightImpulse()

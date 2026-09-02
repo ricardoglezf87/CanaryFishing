@@ -82,6 +82,7 @@ namespace CanaryFishing.Fishing
             Transform waterVisual = AttachModel(water.transform, "Fishing/Models/OceanSurface", "Ocean Model");
             ConfigureImportedVisuals(lureVisual, fishVisual, waterVisual);
             EnsureWaterCollider(water);
+            CreateGuaranteedWaterSurface(water.transform);
             CreateBeachEnvironment();
             ConfigureCamera();
             ConfigureFirstPersonPoint(castPoint);
@@ -323,6 +324,34 @@ namespace CanaryFishing.Fishing
             collider.isTrigger = false;
             collider.center = new Vector3(0f, 0f, 0f);
             collider.size = new Vector3(60f, 0.12f, 70f);
+        }
+
+        private static void CreateGuaranteedWaterSurface(Transform water)
+        {
+            GameObject surface = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            surface.name = "Water Texture Surface";
+            surface.transform.SetParent(water, false);
+            surface.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+            surface.transform.localRotation = Quaternion.identity;
+            surface.transform.localScale = new Vector3(3f, 1f, 3.5f);
+            Collider surfaceCollider = surface.GetComponent<Collider>();
+            if (surfaceCollider != null) Destroy(surfaceCollider);
+
+            Texture2D texture = Resources.Load<Texture2D>("Fishing/Textures/AtlanticWater_Albedo");
+            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null) shader = Shader.Find("Unlit/Texture");
+            if (shader == null) return;
+            Material material = new Material(shader);
+            material.color = new Color(0.35f, 0.68f, 0.82f, 0.95f);
+            if (texture != null)
+            {
+                material.mainTexture = texture;
+                if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", texture);
+                material.mainTextureScale = new Vector2(6f, 6f);
+                if (material.HasProperty("_BaseMap")) material.SetTextureScale("_BaseMap", new Vector2(6f, 6f));
+            }
+            MeshRenderer renderer = surface.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
         }
     }
 }
