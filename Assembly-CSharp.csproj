@@ -60,6 +60,7 @@
     <Compile Include="Assets\Scripts\Fishing\FishingInputController.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingTensionUI.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingLineRenderer.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingRuntimeHUD.cs" />
     <Compile Include="Assets\Scripts\Fishing\PlayerInventory.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingSessionController.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingRodController.cs" />
