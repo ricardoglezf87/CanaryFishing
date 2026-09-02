@@ -53,11 +53,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Fishing\FishData.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingInventoryUI.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishAI.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingPrefabSceneInstaller.cs" />
     <Compile Include="Assets\TutorialInfo\Readme.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingInputController.cs" />
-    <Compile Include="Assets\Scripts\Fishing\FishingDemoBootstrap.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingTensionUI.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingLineRenderer.cs" />
     <Compile Include="Assets\Scripts\Fishing\PlayerInventory.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingSessionController.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingRodController.cs" />
