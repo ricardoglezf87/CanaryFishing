@@ -70,14 +70,37 @@ namespace CanaryFishing.Fishing
 
         private GameObject Spawn(GameObject prefab, string fallbackName)
         {
+#if UNITY_EDITOR
             if (prefab == null)
             {
-                Debug.LogWarning($"{name}: prefab '{fallbackName}' no está asignado; se crea un fallback de prueba.");
+                prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(GetEditorPrefabPath(fallbackName));
+            }
+#endif
+            if (prefab == null)
+            {
                 return CreateRuntimeFallback(fallbackName);
             }
 
             return Instantiate(prefab);
         }
+
+#if UNITY_EDITOR
+        private static string GetEditorPrefabPath(string fallbackName)
+        {
+            switch (fallbackName)
+            {
+                case "Fishing Rod": return "Assets/Prefabs/FishingRod.prefab";
+                case "Fishing Lure": return "Assets/Prefabs/FishingLure.prefab";
+                case "Fish": return "Assets/Prefabs/Fish.prefab";
+                case "Fishing Input": return "Assets/Prefabs/FishingInput.prefab";
+                case "Fishing HUD": return "Assets/Prefabs/FishingHUD.prefab";
+                case "Player Inventory": return "Assets/Prefabs/PlayerInventory.prefab";
+                case "Fishing Session": return "Assets/Prefabs/FishingSession.prefab";
+                case "Water": return "Assets/Prefabs/Water.prefab";
+                default: return string.Empty;
+            }
+        }
+#endif
 
         private static GameObject CreateRuntimeFallback(string objectName)
         {
