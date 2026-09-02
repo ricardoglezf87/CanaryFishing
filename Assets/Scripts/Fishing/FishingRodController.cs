@@ -85,6 +85,7 @@ namespace CanaryFishing.Fishing
                 }
             }
 
+            UpdateLureReel();
             UpdateTension(Time.deltaTime);
         }
 
@@ -121,6 +122,24 @@ namespace CanaryFishing.Fishing
             if (State == FishingRodState.Hooked || State == FishingRodState.Reeling)
             {
                 SetState(reelInput > 0f ? FishingRodState.Reeling : FishingRodState.Hooked);
+            }
+        }
+
+        private void UpdateLureReel()
+        {
+            if (lureRigidbody == null || castPoint == null || reelInput <= 0f ||
+                (State != FishingRodState.WaitingForBite && State != FishingRodState.Hooked && State != FishingRodState.Reeling))
+            {
+                return;
+            }
+
+            Vector3 toRod = castPoint.position - lureRigidbody.position;
+            float reelDistance = reelSpeed * reelInput * Time.deltaTime;
+            lureRigidbody.MovePosition(Vector3.MoveTowards(lureRigidbody.position, castPoint.position, reelDistance));
+
+            if (State == FishingRodState.WaitingForBite && toRod.magnitude <= 0.1f)
+            {
+                ReleaseFish();
             }
         }
 

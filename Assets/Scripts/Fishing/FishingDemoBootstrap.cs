@@ -46,7 +46,8 @@ namespace CanaryFishing.Fishing
             FishingRodController rod = rodObject.AddComponent<FishingRodController>();
             GameObject point = new GameObject("Cast Point");
             point.transform.SetParent(rodObject.transform);
-            point.transform.localPosition = new Vector3(0f, 0f, 1f);
+            // Sitúa el señuelo a 2 m bajo la superficie, donde está el pez demo.
+            point.transform.localPosition = new Vector3(0f, -3f, 1f);
             castPoint = point.transform;
             return rod;
         }
