@@ -55,6 +55,8 @@
     <Compile Include="Assets\Scripts\Fishing\FishData.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingInventoryUI.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishAI.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingInteractor.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingWorld.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingPrefabSceneInstaller.cs" />
     <Compile Include="Assets\TutorialInfo\Readme.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingInputController.cs" />
@@ -64,6 +66,8 @@
     <Compile Include="Assets\Scripts\Fishing\PlayerInventory.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingSessionController.cs" />
     <Compile Include="Assets\Scripts\Fishing\FishingRodController.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FishingEquipment.cs" />
+    <Compile Include="Assets\Scripts\Fishing\FirstPersonPlayerController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditor.uss" />

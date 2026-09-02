@@ -235,7 +235,7 @@ namespace CanaryFishing.Fishing
             Camera camera = Camera.main;
             if (camera == null) return;
             rodVisual.SetParent(camera.transform, false);
-            rodVisual.localPosition = new Vector3(0.48f, -0.55f, 0.95f);
+            rodVisual.localPosition = new Vector3(0.48f, -1.0f, 1.5f);
             rodVisual.localRotation = Quaternion.Euler(0f, 180f, 8f);
             rodVisual.localScale = Vector3.one * 0.55f;
             ApplyMaterial(rodVisual, CreateMaterial(new Color(0.055f, 0.07f, 0.065f), null, 1f, 0.65f));
