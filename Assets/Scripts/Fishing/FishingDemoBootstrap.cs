@@ -60,7 +60,7 @@ namespace CanaryFishing.Fishing
             SetMaterial(lure, Color.yellow);
             Rigidbody body = lure.AddComponent<Rigidbody>();
             body.useGravity = false;
-            body.drag = 0.5f;
+            body.linearDamping = 0.5f;
             return body;
         }
 
