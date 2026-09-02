@@ -27,6 +27,7 @@ namespace CanaryFishing.Fishing
         {
             GameObject rodObject = Spawn(rodPrefab, "Fishing Rod");
             FishingRodController rod = GetOrAdd<FishingRodController>(rodObject);
+            GetOrAdd<TackleLoadout>(rodObject);
             GetOrAdd<FishingLineRenderer>(rodObject);
             GameObject lureObject = Spawn(lurePrefab, "Fishing Lure");
             GameObject water = Spawn(waterPrefab, "Water");
@@ -34,9 +35,12 @@ namespace CanaryFishing.Fishing
             // La superficie queda por debajo de la boya y el pez para que la demo
             // sea visible con el material opaco de prueba.
             water.transform.position = new Vector3(0f, -3f, 6f);
+            waterSurfaceY = water.transform.position.y;
             Rigidbody lureBody = lureObject.GetComponent<Rigidbody>();
             if (lureBody == null) lureBody = lureObject.AddComponent<Rigidbody>();
-            lureBody.useGravity = false;
+            lureBody.useGravity = true;
+            lureBody.linearDamping = 0.15f;
+            EnsureSphereCollider(lureObject, 0.12f);
             Transform castPoint = rod != null
                 ? (rod.CastPoint != null ? rod.CastPoint : CreateDefaultCastPoint(rod.transform))
                 : null;
@@ -48,6 +52,7 @@ namespace CanaryFishing.Fishing
             Rigidbody fishBody = fishObject.GetComponent<Rigidbody>();
             if (fishBody == null) fishBody = fishObject.AddComponent<Rigidbody>();
             if (fishBody != null) fishBody.useGravity = false;
+            EnsureSphereCollider(fishObject, 0.45f);
             if (fishData == null)
             {
                 fishData = FishData.CreateDemo("Demo Bass", 2.5f, 14f, 100f, 2f, 0.8f);
@@ -76,6 +81,7 @@ namespace CanaryFishing.Fishing
             Transform fishVisual = AttachModel(fishObject.transform, "Fishing/Models/FishModel", "Fish Model");
             Transform waterVisual = AttachModel(water.transform, "Fishing/Models/OceanSurface", "Ocean Model");
             ConfigureImportedVisuals(lureVisual, fishVisual, waterVisual);
+            EnsureWaterCollider(water);
             CreateBeachEnvironment();
             ConfigureCamera();
             ConfigureFirstPersonPoint(castPoint);
@@ -249,8 +255,13 @@ namespace CanaryFishing.Fishing
             if (water != null)
             {
                 water.localScale = Vector3.one;
-                Material waterMaterial = CreateMaterial(Color.white, "Fishing/Textures/AtlanticWater_Albedo", 3f, 0.82f);
+                Material waterMaterial = CreateMaterial(new Color(0.35f, 0.68f, 0.82f, 0.82f), "Fishing/Textures/AtlanticWater_Albedo", 3f, 0.82f);
                 if (waterMaterial.HasProperty("_Metallic")) waterMaterial.SetFloat("_Metallic", 0.05f);
+                if (waterMaterial.HasProperty("_Surface")) waterMaterial.SetFloat("_Surface", 1f);
+                if (waterMaterial.HasProperty("_Blend")) waterMaterial.SetFloat("_Blend", 0f);
+                if (waterMaterial.HasProperty("_Alpha")) waterMaterial.SetFloat("_Alpha", 0.82f);
+                waterMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                waterMaterial.renderQueue = 3000;
                 ApplyMaterial(water, waterMaterial);
             }
         }
@@ -296,6 +307,22 @@ namespace CanaryFishing.Fishing
             if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
             if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", smoothness);
             return material;
+        }
+
+        private static void EnsureSphereCollider(GameObject target, float radius)
+        {
+            SphereCollider collider = target.GetComponent<SphereCollider>();
+            if (collider == null) collider = target.AddComponent<SphereCollider>();
+            collider.radius = radius;
+        }
+
+        private static void EnsureWaterCollider(GameObject water)
+        {
+            BoxCollider collider = water.GetComponent<BoxCollider>();
+            if (collider == null) collider = water.AddComponent<BoxCollider>();
+            collider.isTrigger = false;
+            collider.center = new Vector3(0f, 0f, 0f);
+            collider.size = new Vector3(60f, 0.12f, 70f);
         }
     }
 }

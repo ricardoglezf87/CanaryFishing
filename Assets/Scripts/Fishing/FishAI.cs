@@ -61,11 +61,17 @@ namespace CanaryFishing.Fishing
 
         public void Initialize(FishData data, FishingRodController rod, Transform targetLure, Rigidbody body)
         {
+            Initialize(data, rod, targetLure, body, waterSurfaceY);
+        }
+
+        public void Initialize(FishData data, FishingRodController rod, Transform targetLure, Rigidbody body, float surfaceY)
+        {
             ApplyRuntimeDefaults();
             fishData = data;
             fishingRod = rod;
             lure = targetLure;
             fishRigidbody = body;
+            waterSurfaceY = surfaceY;
             lureRigidbody = targetLure != null ? targetLure.GetComponent<Rigidbody>() : null;
             remainingStamina = data != null ? data.Stamina : 0f;
             currentPullForce = data != null ? data.PullForce : 0f;

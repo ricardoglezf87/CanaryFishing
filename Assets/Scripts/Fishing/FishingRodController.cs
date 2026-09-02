@@ -27,6 +27,7 @@ namespace CanaryFishing.Fishing
         [Header("References")]
         [SerializeField] private Transform castPoint;
         [SerializeField] private Rigidbody lureRigidbody;
+        [SerializeField] private TackleLoadout loadout;
 
         [Header("Casting")]
         [SerializeField, Min(0f)] private float minCastForce = 5f;
@@ -43,6 +44,8 @@ namespace CanaryFishing.Fishing
         [SerializeField, Min(0f)] private float maxTension = 20f;
         [SerializeField, Min(0f)] private float maxTensionDuration = 2f;
         [SerializeField, Min(0f)] private float tensionSmoothing = 10f;
+        [SerializeField, Range(0f, 1f)] private float drag = 0.35f;
+        [SerializeField, Range(0f, 1f)] private float rodAngleEffect = 0.35f;
 
         [Header("Inspector events")]
         [SerializeField] private FloatUnityEvent tensionChanged = new FloatUnityEvent();
@@ -69,6 +72,15 @@ namespace CanaryFishing.Fishing
         public Transform CastPoint => castPoint;
         public float ReelInput => reelInput;
         public float FishPullForce => fishPullForce;
+        public float Drag => drag;
+        public TackleLoadout Loadout => loadout;
+
+        public bool TrySetDrag(float normalizedDrag)
+        {
+            if (loadout != null && !loadout.Validate(out _)) return false;
+            drag = Mathf.Clamp01(normalizedDrag);
+            return true;
+        }
 
         public void Initialize(Transform targetCastPoint, Rigidbody targetLure)
         {
@@ -77,6 +89,7 @@ namespace CanaryFishing.Fishing
             if (maxTension <= 0f) maxTension = 20f;
             if (maxTensionDuration <= 0f) maxTensionDuration = 2f;
             if (tensionSmoothing <= 0f) tensionSmoothing = 10f;
+            if (loadout == null) loadout = GetComponent<TackleLoadout>();
             castPoint = targetCastPoint;
             lureRigidbody = targetLure;
         }
@@ -192,9 +205,13 @@ namespace CanaryFishing.Fishing
 
         private void UpdateTension(float deltaTime)
         {
-            float reelForce = reelInput * reelSpeed * reelForcePerSpeed;
+            float dragLimit = loadout != null ? loadout.GetDragLimit(0.6f) : 0.6f;
+            float dragForce = fishPullForce * Mathf.Clamp01(drag) * dragLimit;
+            float reelForce = reelInput * reelSpeed * reelForcePerSpeed * (1f - drag * 0.35f);
+            float angle = castPoint != null ? Vector3.Angle(transform.forward, castPoint.forward) : 0f;
+            float angleMultiplier = 1f + Mathf.Clamp01(angle / 90f) * rodAngleEffect;
             float targetTension = State == FishingRodState.Hooked || State == FishingRodState.Reeling
-                ? Mathf.Max(0f, fishPullForce - reelForce)
+                ? Mathf.Max(0f, (fishPullForce + dragForce - reelForce) * angleMultiplier)
                 : 0f;
 
             currentTension = tensionSmoothing > 0f
@@ -206,7 +223,9 @@ namespace CanaryFishing.Fishing
 
             // El temporizador usa la tensión objetivo para no retrasar la rotura
             // cuando la suavización visual mantiene la barra por debajo del límite.
-            if (!lineBroken && targetTension > maxTension)
+            float weakestComponent = loadout != null ? loadout.GetWeakestDurability(maxTension) : maxTension;
+            float breakLimit = Mathf.Min(maxTension, weakestComponent);
+            if (!lineBroken && targetTension > breakLimit)
             {
                 overTensionTimer += deltaTime;
                 if (overTensionTimer >= maxTensionDuration)

@@ -15,6 +15,8 @@ namespace CanaryFishing.Fishing
         [SerializeField, Min(0f)] private float stamina = 100f;
         [SerializeField, Min(0f)] private float preferredDepth = 2f;
         [SerializeField, Range(0f, 1f)] private float biteProbability = 0.25f;
+        [SerializeField, Min(0f)] private float length = 35f;
+        [SerializeField, Min(0f)] private float value = 10f;
 
         public string FishName => fishName;
         public float Weight => weight;
@@ -22,6 +24,8 @@ namespace CanaryFishing.Fishing
         public float Stamina => stamina;
         public float PreferredDepth => preferredDepth;
         public float BiteProbability => biteProbability;
+        public float Length => length;
+        public float Value => value;
 
         public static FishData CreateDemo(string species, float fishWeight, float force, float fishStamina,
             float depth, float probability)
