@@ -39,6 +39,9 @@ namespace CanaryFishing.Fishing
         [SerializeField, Range(0f, 1f)] private float exhaustedThreshold = 0.1f;
         [SerializeField, Range(0f, 1f)] private float exhaustedPullMultiplier = 0.25f;
         [SerializeField, Min(0f)] private float catchDistance = 2f;
+        [SerializeField, Min(0.1f)] private float maxHookDistance = 1.25f;
+        [SerializeField, Min(0.1f)] private float hookedFollowSpeed = 5f;
+        [SerializeField, Min(0.1f)] private float maxSwimSpeed = 4f;
 
         [Header("Inspector events")]
         [SerializeField] private FishCaughtUnityEvent fishCaught = new FishCaughtUnityEvent();
@@ -89,6 +92,23 @@ namespace CanaryFishing.Fishing
                 case FishAIState.Exhausted:
                     UpdateExhausted();
                     break;
+            }
+        }
+
+        private void FixedUpdate()
+        {
+            if (fishData == null || fishRigidbody == null ||
+                (State != FishAIState.Fighting && State != FishAIState.Exhausted))
+            {
+                return;
+            }
+
+            KeepFishInWater();
+            KeepFishAttachedToLure();
+
+            if (fishRigidbody.linearVelocity.sqrMagnitude > maxSwimSpeed * maxSwimSpeed)
+            {
+                fishRigidbody.linearVelocity = fishRigidbody.linearVelocity.normalized * maxSwimSpeed;
             }
         }
 
@@ -158,7 +178,9 @@ namespace CanaryFishing.Fishing
             currentPullForce = fishData.PullForce * exhaustedPullMultiplier;
             fishingRod.SetFishPullForce(currentPullForce);
 
-            if (Vector3.Distance(transform.position, lure.position) <= catchDistance && fishingRod.ReelInput > 0f)
+            if (fishingRod.CastPoint != null &&
+                Vector3.Distance(lure.position, fishingRod.CastPoint.position) <= catchDistance &&
+                fishingRod.ReelInput > 0f)
             {
                 OnFishCaught();
             }
@@ -182,7 +204,14 @@ namespace CanaryFishing.Fishing
             }
             OnFishCaughtEvent?.Invoke(caughtFish);
             fishCaught.Invoke(caughtFish);
+            if (fishRigidbody != null)
+            {
+                fishRigidbody.linearVelocity = Vector3.zero;
+                fishRigidbody.angularVelocity = Vector3.zero;
+                fishRigidbody.isKinematic = true;
+            }
             enabled = false;
+            gameObject.SetActive(false);
             return caughtFish;
         }
 
@@ -202,14 +231,39 @@ namespace CanaryFishing.Fishing
 
         private void ApplyFightImpulse()
         {
-            Vector3 impulseDirection = UnityEngine.Random.onUnitSphere;
-            impulseDirection.y = Mathf.Clamp(impulseDirection.y, -0.35f, 0.35f);
-            impulseDirection.Normalize();
+            Vector2 horizontal = UnityEngine.Random.insideUnitCircle.normalized;
+            Vector3 impulseDirection = new Vector3(horizontal.x, 0f, horizontal.y);
 
             if (fishRigidbody != null)
             {
                 fishRigidbody.AddForce(impulseDirection * fightImpulse, ForceMode.Impulse);
             }
+        }
+
+        private void KeepFishInWater()
+        {
+            float preferredY = waterSurfaceY - fishData.PreferredDepth;
+            Vector3 position = fishRigidbody.position;
+            position.y = Mathf.Clamp(position.y, preferredY - depthTolerance, preferredY + depthTolerance);
+            fishRigidbody.position = position;
+
+            Vector3 velocity = fishRigidbody.linearVelocity;
+            velocity.y = 0f;
+            fishRigidbody.linearVelocity = velocity;
+        }
+
+        private void KeepFishAttachedToLure()
+        {
+            if (lure == null) return;
+
+            Vector3 lureToFish = fishRigidbody.position - lure.position;
+            if (lureToFish.sqrMagnitude <= maxHookDistance * maxHookDistance) return;
+
+            Vector3 target = lure.position + lureToFish.normalized * maxHookDistance;
+            fishRigidbody.MovePosition(Vector3.MoveTowards(
+                fishRigidbody.position,
+                target,
+                hookedFollowSpeed * Time.fixedDeltaTime));
         }
 
         private float GetMaxTension()

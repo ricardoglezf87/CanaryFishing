@@ -36,8 +36,8 @@ namespace CanaryFishing.Fishing
 
         [Header("Reeling")]
         [SerializeField, Range(0f, 1f)] private float reelInput;
-        [SerializeField, Min(0f)] private float reelForcePerSpeed = 8f;
-        [SerializeField, Min(0f)] private float reelSpeed = 1f;
+        [SerializeField, Min(0f)] private float reelForcePerSpeed = 1.25f;
+        [SerializeField, Min(0f)] private float reelSpeed = 6f;
 
         [Header("Line tension")]
         [SerializeField, Min(0f)] private float maxTension = 20f;
@@ -136,6 +136,8 @@ namespace CanaryFishing.Fishing
 
             Vector3 toRod = castPoint.position - lureRigidbody.position;
             float reelDistance = reelSpeed * reelInput * Time.deltaTime;
+            lureRigidbody.linearVelocity = Vector3.zero;
+            lureRigidbody.angularVelocity = Vector3.zero;
             lureRigidbody.MovePosition(Vector3.MoveTowards(lureRigidbody.position, castPoint.position, reelDistance));
 
             if (State == FishingRodState.WaitingForBite && toRod.magnitude <= 0.1f)
@@ -155,6 +157,11 @@ namespace CanaryFishing.Fishing
             }
 
             fishPullForce = Mathf.Max(0f, initialPullForce);
+            if (lureRigidbody != null)
+            {
+                lureRigidbody.linearVelocity = Vector3.zero;
+                lureRigidbody.angularVelocity = Vector3.zero;
+            }
             lineBroken = false;
             overTensionTimer = 0f;
             SetState(FishingRodState.Hooked);
