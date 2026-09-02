@@ -30,8 +30,7 @@ namespace CanaryFishing.Fishing
             GetOrAdd<FishingLineRenderer>(rodObject);
             GameObject lureObject = Spawn(lurePrefab, "Fishing Lure");
             GameObject water = Spawn(waterPrefab, "Water");
-            water.transform.position = new Vector3(0f, -3f, 6f);
-            CreateBeachEnvironment(water);
+            water.transform.position = new Vector3(0f, -2.85f, 25f);
             // La superficie queda por debajo de la boya y el pez para que la demo
             // sea visible con el material opaco de prueba.
             water.transform.position = new Vector3(0f, -3f, 6f);
@@ -68,17 +67,16 @@ namespace CanaryFishing.Fishing
             FishingRuntimeHUD runtimeHUD = GetOrAdd<FishingRuntimeHUD>(gameObject);
 
             session?.Initialize(rod, fish, input, tensionUI, inventoryUI, inventory);
-            EnsureVisual(rodObject, PrimitiveType.Cylinder, new Color(0.15f, 0.08f, 0.03f), new Vector3(0.08f, 2f, 0.08f));
-            Transform rodVisual = rodObject.transform.Find("Visual");
+            Transform rodVisual = AttachModel(rodObject.transform, "Fishing/Models/FishingRodModel", "Rod Model");
             if (rodVisual != null)
             {
                 ConfigureFirstPersonRod(rodVisual);
             }
-            EnsureVisual(lureObject, PrimitiveType.Sphere, Color.yellow, Vector3.one * 0.25f);
-            EnsureVisual(fish != null ? fish.gameObject : null, PrimitiveType.Sphere, new Color(0.9f, 0.25f, 0.1f), new Vector3(1.2f, 0.5f, 2f));
-            PolishLureVisual(lureObject);
-            PolishFishVisual(fishObject);
-            EnsureVisual(water, PrimitiveType.Cube, new Color(0.05f, 0.3f, 0.55f), new Vector3(24f, 0.5f, 24f));
+            Transform lureVisual = AttachModel(lureObject.transform, "Fishing/Models/FloatModel", "Float Model");
+            Transform fishVisual = AttachModel(fishObject.transform, "Fishing/Models/FishModel", "Fish Model");
+            Transform waterVisual = AttachModel(water.transform, "Fishing/Models/OceanSurface", "Ocean Model");
+            ConfigureImportedVisuals(lureVisual, fishVisual, waterVisual);
+            CreateBeachEnvironment();
             ConfigureCamera();
             ConfigureFirstPersonPoint(castPoint);
             tensionUI?.Initialize(rod);
@@ -156,16 +154,25 @@ namespace CanaryFishing.Fishing
             return result;
         }
 
-        private static void EnsureVisual(GameObject target, PrimitiveType type, Color color, Vector3 scale)
+        private static Transform AttachModel(Transform parent, string resourcePath, string objectName)
         {
-            if (target == null || target.GetComponentInChildren<MeshRenderer>() != null) return;
-            GameObject visual = GameObject.CreatePrimitive(type);
-            visual.name = "Visual";
-            visual.transform.SetParent(target.transform, false);
-            visual.transform.localScale = scale;
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            material.color = color;
-            visual.GetComponent<Renderer>().sharedMaterial = material;
+            GameObject modelAsset = Resources.Load<GameObject>(resourcePath);
+            if (modelAsset == null)
+            {
+                Debug.LogError($"No se pudo cargar el modelo 3D: Resources/{resourcePath}");
+                return null;
+            }
+
+            GameObject instance = Instantiate(modelAsset, parent);
+            instance.name = objectName;
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+            foreach (Collider modelCollider in instance.GetComponentsInChildren<Collider>())
+            {
+                modelCollider.enabled = false;
+            }
+            return instance.transform;
         }
 
         private static T GetOrAdd<T>(GameObject target) where T : Component
@@ -220,116 +227,65 @@ namespace CanaryFishing.Fishing
         {
             Camera camera = Camera.main;
             if (camera == null) return;
-
-            // Los cilindros de Unity crecen sobre su eje Y. Por eso una caña
-            // visualmente vertical usa Y=180 y una ligera inclinación en Z,
-            // en lugar de girarla 90 grados y dejarla horizontal.
             rodVisual.SetParent(camera.transform, false);
-            rodVisual.name = "Rod Handle";
-            rodVisual.localPosition = new Vector3(0.55f, -0.48f, 0.95f);
+            rodVisual.localPosition = new Vector3(0.48f, -0.55f, 0.95f);
             rodVisual.localRotation = Quaternion.Euler(0f, 180f, 8f);
-            rodVisual.localScale = new Vector3(0.055f, 0.45f, 0.055f);
-            SetMaterial(rodVisual.gameObject, new Color(0.16f, 0.07f, 0.025f));
-
-            CreateVisualPart(camera.transform, PrimitiveType.Cylinder, "Rod Lower Section",
-                new Vector3(0.43f, 0.28f, 1.08f), new Vector3(0.03f, 0.75f, 0.03f),
-                Quaternion.Euler(0f, 180f, 8f), new Color(0.055f, 0.075f, 0.065f));
-            CreateVisualPart(camera.transform, PrimitiveType.Cylinder, "Rod Upper Section",
-                new Vector3(0.23f, 1.48f, 1.25f), new Vector3(0.016f, 0.62f, 0.016f),
-                Quaternion.Euler(0f, 180f, 10f), new Color(0.035f, 0.05f, 0.045f));
-
-            CreateVisualPart(camera.transform, PrimitiveType.Cylinder, "Reel Spool",
-                new Vector3(0.65f, -0.13f, 0.9f), new Vector3(0.11f, 0.055f, 0.11f),
-                Quaternion.Euler(90f, 0f, 0f), new Color(0.08f, 0.1f, 0.12f));
-            CreateVisualPart(camera.transform, PrimitiveType.Cube, "Reel Arm",
-                new Vector3(0.75f, -0.12f, 0.88f), new Vector3(0.16f, 0.025f, 0.025f),
-                Quaternion.Euler(0f, 0f, -20f), new Color(0.18f, 0.2f, 0.22f));
+            rodVisual.localScale = Vector3.one * 0.55f;
+            ApplyMaterial(rodVisual, CreateMaterial(new Color(0.055f, 0.07f, 0.065f), null, 1f, 0.65f));
         }
 
-        private static void PolishLureVisual(GameObject lure)
+        private static void ConfigureImportedVisuals(Transform lure, Transform fish, Transform water)
         {
-            if (lure == null) return;
-            Transform body = lure.transform.Find("Visual");
-            if (body != null)
+            if (lure != null)
             {
-                body.localScale = new Vector3(0.12f, 0.16f, 0.12f);
-                SetMaterial(body.gameObject, new Color(0.92f, 0.16f, 0.08f));
+                lure.localScale = Vector3.one * 0.45f;
+                ApplyMaterial(lure, CreateMaterial(new Color(0.92f, 0.16f, 0.08f), null, 1f, 0.45f));
             }
-
-            CreateVisualPart(lure.transform, PrimitiveType.Cylinder, "Float Stem",
-                new Vector3(0f, 0.2f, 0f), new Vector3(0.025f, 0.12f, 0.025f),
-                Quaternion.identity, Color.white);
-        }
-
-        private static void PolishFishVisual(GameObject fish)
-        {
-            if (fish == null) return;
-            Transform body = fish.transform.Find("Visual");
-            if (body != null)
+            if (fish != null)
             {
-                body.localScale = new Vector3(0.42f, 0.22f, 0.7f);
-                SetMaterial(body.gameObject, new Color(0.18f, 0.38f, 0.32f));
+                fish.localScale = Vector3.one * 0.55f;
+                ApplyMaterial(fish, CreateMaterial(new Color(0.22f, 0.42f, 0.34f), null, 1f, 0.35f));
             }
-
-            CreateVisualPart(fish.transform, PrimitiveType.Cube, "Fish Tail",
-                new Vector3(0f, 0f, -0.78f), new Vector3(0.42f, 0.055f, 0.32f),
-                Quaternion.Euler(0f, 45f, 0f), new Color(0.12f, 0.3f, 0.26f));
-            CreateVisualPart(fish.transform, PrimitiveType.Sphere, "Fish Eye",
-                new Vector3(0.25f, 0.1f, 0.42f), Vector3.one * 0.045f,
-                Quaternion.identity, Color.black);
-        }
-
-        private static GameObject CreateVisualPart(Transform parent, PrimitiveType type, string partName,
-            Vector3 localPosition, Vector3 localScale, Quaternion localRotation, Color color)
-        {
-            GameObject part = GameObject.CreatePrimitive(type);
-            part.name = partName;
-            part.transform.SetParent(parent, false);
-            part.transform.localPosition = localPosition;
-            part.transform.localScale = localScale;
-            part.transform.localRotation = localRotation;
-            Collider collider = part.GetComponent<Collider>();
-            if (collider != null) collider.enabled = false;
-            SetMaterial(part, color);
-            return part;
-        }
-
-        private static void CreateBeachEnvironment(GameObject water)
-        {
-            GameObject beach = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            beach.name = "Demo Beach";
-            beach.transform.position = new Vector3(0f, -3.35f, 10f);
-            beach.transform.localScale = new Vector3(50f, 0.2f, 50f);
-            SetMaterial(beach, new Color(0.76f, 0.58f, 0.34f));
-
             if (water != null)
             {
-                Transform visual = water.transform.Find("Visual");
-                if (visual != null) visual.localScale = new Vector3(30f, 0.25f, 30f);
-                MeshRenderer renderer = water.GetComponentInChildren<MeshRenderer>();
-                if (renderer != null) renderer.sharedMaterial = CreateMaterial(new Color(0.025f, 0.22f, 0.42f));
+                water.localScale = Vector3.one;
+                Material waterMaterial = CreateMaterial(Color.white, "Fishing/Textures/AtlanticWater_Albedo", 7f, 0.82f);
+                if (waterMaterial.HasProperty("_Metallic")) waterMaterial.SetFloat("_Metallic", 0.05f);
+                ApplyMaterial(water, waterMaterial);
             }
-
-            GameObject shore = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            shore.name = "Beach Shoreline";
-            shore.transform.position = new Vector3(0f, -3.16f, -1f);
-            shore.transform.localScale = new Vector3(50f, 0.12f, 8f);
-            SetMaterial(shore, new Color(0.9f, 0.72f, 0.45f));
         }
 
-        private static void SetMaterial(GameObject target, Color color)
+        private static void CreateBeachEnvironment()
         {
-            MeshRenderer renderer = target.GetComponent<MeshRenderer>();
-            if (renderer != null) renderer.sharedMaterial = CreateMaterial(color);
+            GameObject beachAsset = Resources.Load<GameObject>("Fishing/Models/BeachTerrain");
+            if (beachAsset == null) return;
+            GameObject beach = Instantiate(beachAsset);
+            beach.name = "Canary Beach Model";
+            beach.transform.position = new Vector3(0f, -3.08f, -20f);
+            ApplyMaterial(beach.transform, CreateMaterial(Color.white, "Fishing/Textures/CanarySand_Albedo", 10f, 0.18f));
         }
 
-        private static Material CreateMaterial(Color color)
+        private static void ApplyMaterial(Transform root, Material material)
+        {
+            foreach (MeshRenderer renderer in root.GetComponentsInChildren<MeshRenderer>())
+            {
+                renderer.sharedMaterial = material;
+            }
+        }
+
+        private static Material CreateMaterial(Color color, string textureResource, float tiling, float smoothness)
         {
             Shader shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Standard");
             Material material = new Material(shader);
             material.color = color;
-            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", 0.55f);
+            Texture2D texture = string.IsNullOrEmpty(textureResource) ? null : Resources.Load<Texture2D>(textureResource);
+            if (texture != null)
+            {
+                material.mainTexture = texture;
+                material.mainTextureScale = Vector2.one * tiling;
+            }
+            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", smoothness);
             return material;
         }
     }
