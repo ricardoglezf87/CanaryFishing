@@ -96,7 +96,7 @@ fishingState.OnClientEvent:Connect(function(state, value)
 		powerFrame.Visible = true
 		powerFill.Size = UDim2.fromScale(math.clamp(value, 0, 1), 1)
 		powerFill.BackgroundColor3 = Color3.fromHSV((1 - value) * 0.33, 0.9, 1)
-		label.Text = "Tensión: " .. math.floor(value * 100) .. "% | Mantén R para recoger"
+		label.Text = "Tensión: " .. math.floor(value * 100) .. "% | Mantén R para luchar"
 	elseif state == "Reset" then
 		powerFrame.Visible = false
 		label.Text = value or ""

@@ -24,7 +24,7 @@ fishingState.Parent = remotes
 local RodConfig = require(modules:WaitForChild("RodConfig"))
 local FishingMath = require(modules:WaitForChild("FishingMath"))
 
-local activeCasts: {[Player]: {part: BasePart, origin: Vector3, status: string, tension: number, reeling: boolean, biteAt: number?}} = {}
+local activeCasts: {[Player]: {part: BasePart, origin: Vector3, status: string, tension: number, progress: number, reeling: boolean, biteAt: number?}} = {}
 
 local function createRodTemplate(): Tool
 	local existing = ServerStorage:FindFirstChild("BasicRod")
@@ -76,12 +76,15 @@ end
 
 setupPod()
 
-local function clearCast(player: Player)
+local function clearCast(player: Player, message: string?)
 	local cast = activeCasts[player]
 	if cast and cast.part then
 		cast.part:Destroy()
 	end
 	activeCasts[player] = nil
+	if message then
+		fishingState:FireClient(player, "Reset", message)
+	end
 end
 
 local function getCastOrigin(player: Player): (Vector3?, Vector3?)
@@ -130,7 +133,7 @@ castRequest.OnServerEvent:Connect(function(player: Player, chargeAlpha: number)
 		RodConfig.Cast.UpwardAngle
 	)
 
-	activeCasts[player] = {part = lure, origin = origin, status = "Flying", tension = 0, reeling = false}
+	activeCasts[player] = {part = lure, origin = origin, status = "Flying", tension = 0, progress = 0, reeling = false}
 	fishingState:FireClient(player, "Cast", "El señuelo está en el agua...")
 
 	task.delay(12, function()
@@ -156,11 +159,21 @@ RunService.Heartbeat:Connect(function(deltaTime)
 		elseif cast.status == "WaitingForBite" and cast.biteAt and os.clock() >= cast.biteAt then
 			cast.status = "Hooked"
 			cast.tension = 0.25
+			cast.progress = 0
 			fishingState:FireClient(player, "Bite", "¡Picada! Mantén la tensión controlada")
 		elseif cast.status == "Hooked" then
-			cast.tension = math.clamp(cast.tension + (cast.reeling and 0.42 or -0.12) * deltaTime, 0, 1)
+			if cast.reeling then
+				cast.tension = math.clamp(cast.tension + 0.15 * deltaTime, 0, 1)
+				cast.progress = math.clamp(cast.progress + 0.35 * deltaTime, 0, 1)
+			else
+				cast.tension = math.clamp(cast.tension - 0.25 * deltaTime, 0, 1)
+			end
 			fishingState:FireClient(player, "Tension", cast.tension)
-			if cast.tension >= 1 then clearCast(player, "¡La línea se ha roto!") end
+			if cast.progress >= 1 then
+				clearCast(player, "¡Capturaste un pez!")
+			elseif cast.tension >= 1 then
+				clearCast(player, "¡La línea se ha roto!")
+			end
 		end
 	end
 end)
