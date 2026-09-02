@@ -10,17 +10,19 @@ namespace CanaryFishing.Fishing
         [SerializeField] private FishAI fish;
         [SerializeField] private FishingInputController input;
         [SerializeField] private FishingTensionUI tensionUI;
+        [SerializeField] private FishingInventoryUI inventoryUI;
         [SerializeField] private PlayerInventory inventory;
 
         public event Action<FishData> OnFishCaught;
 
         public void Initialize(FishingRodController targetRod, FishAI targetFish, FishingInputController targetInput,
-            FishingTensionUI targetUI, PlayerInventory targetInventory)
+            FishingTensionUI targetUI, FishingInventoryUI targetInventoryUI, PlayerInventory targetInventory)
         {
             rod = targetRod;
             fish = targetFish;
             input = targetInput;
             tensionUI = targetUI;
+            inventoryUI = targetInventoryUI;
             inventory = targetInventory;
         }
 
@@ -34,6 +36,7 @@ namespace CanaryFishing.Fishing
 
             input?.Initialize(rod);
             tensionUI?.Initialize(rod);
+            inventoryUI?.Initialize(inventory);
         }
 
         private void HandleFishCaught(FishData caughtFish) => OnFishCaught?.Invoke(caughtFish);

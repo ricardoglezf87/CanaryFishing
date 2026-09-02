@@ -52,6 +52,7 @@ namespace CanaryFishing.Fishing
         private float fishPullForce;
         private float currentTension;
         private float overTensionTimer;
+        private bool lineBroken;
 
         /// <summary>Notifica cambios de tensión: tensión actual y valor máximo configurado.</summary>
         public event Action<float, float> OnTensionChanged;
@@ -65,6 +66,7 @@ namespace CanaryFishing.Fishing
         public FishingRodState State { get; private set; } = FishingRodState.Idle;
         public float CurrentTension => currentTension;
         public float MaxTension => maxTension;
+        public Transform CastPoint => castPoint;
         public float ReelInput => reelInput;
         public float FishPullForce => fishPullForce;
 
@@ -154,6 +156,7 @@ namespace CanaryFishing.Fishing
             }
 
             fishPullForce = Mathf.Max(0f, initialPullForce);
+            lineBroken = false;
             overTensionTimer = 0f;
             SetState(FishingRodState.Hooked);
             return true;
@@ -190,7 +193,9 @@ namespace CanaryFishing.Fishing
             OnTensionChanged?.Invoke(currentTension, maxTension);
             tensionChanged.Invoke(currentTension);
 
-            if (currentTension > maxTension)
+            // El temporizador usa la tensión objetivo para no retrasar la rotura
+            // cuando la suavización visual mantiene la barra por debajo del límite.
+            if (!lineBroken && targetTension > maxTension)
             {
                 overTensionTimer += deltaTime;
                 if (overTensionTimer >= maxTensionDuration)
@@ -210,6 +215,7 @@ namespace CanaryFishing.Fishing
             reelInput = 0f;
             currentTension = 0f;
             overTensionTimer = 0f;
+            lineBroken = true;
             SetState(FishingRodState.Idle);
 
             OnLineBreak?.Invoke();
