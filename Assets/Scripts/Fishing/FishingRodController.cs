@@ -96,7 +96,7 @@ namespace CanaryFishing.Fishing
             Vector3 direction = GetCastDirection();
 
             lureRigidbody.position = castPoint != null ? castPoint.position : transform.position;
-            lureRigidbody.velocity = Vector3.zero;
+            lureRigidbody.linearVelocity = Vector3.zero;
             lureRigidbody.angularVelocity = Vector3.zero;
             lureRigidbody.AddForce(direction * force, ForceMode.VelocityChange);
 
