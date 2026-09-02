@@ -56,7 +56,7 @@ namespace CanaryFishing.Fishing
             EnsureCanvas(hudObject);
             FishingTensionUI tensionUI = GetOrAdd<FishingTensionUI>(hudObject);
             GetOrAdd<FishingInventoryUI>(hudObject);
-            FishingInventoryUI inventoryUI = FindObjectOfType<FishingInventoryUI>();
+            FishingInventoryUI inventoryUI = FindAnyObjectByType<FishingInventoryUI>();
             PlayerInventory inventory = GetOrAdd<PlayerInventory>(Spawn(inventoryPrefab, "Player Inventory"));
             FishingSessionController session = GetOrAdd<FishingSessionController>(Spawn(sessionPrefab, "Fishing Session"));
 
