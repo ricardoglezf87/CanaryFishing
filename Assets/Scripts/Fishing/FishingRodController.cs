@@ -105,7 +105,6 @@ namespace CanaryFishing.Fishing
             float force = Mathf.Lerp(minCastForce, maxCastForce, normalizedInput);
             Vector3 direction = GetCastDirection();
 
-            lureRigidbody.position = castPoint != null ? castPoint.position : transform.position;
             lureRigidbody.linearVelocity = Vector3.zero;
             lureRigidbody.angularVelocity = Vector3.zero;
             lureRigidbody.AddForce(direction * force, ForceMode.VelocityChange);
