@@ -120,7 +120,8 @@ castRequest.OnServerEvent:Connect(function(player: Player, chargeAlpha: number)
 	lure.Size = Vector3.new(0.35, 0.35, 0.35)
 	lure.Color = Color3.fromRGB(255, 170, 0)
 	lure.Material = Enum.Material.Neon
-	lure.CanCollide = true
+	-- La boya no debe rodar por el terreno; el servidor controla su zona válida.
+	lure.CanCollide = false
 	lure.Position = origin
 	lure.Parent = workspace
 
@@ -152,10 +153,21 @@ RunService.Heartbeat:Connect(function(deltaTime)
 	for player, cast in pairs(activeCasts) do
 		if not cast.part or not cast.part.Parent then
 			clearCast(player)
-		elseif cast.status == "Flying" and isPointInsideWater(cast.part.Position) then
-			cast.status = "WaitingForBite"
-			cast.biteAt = os.clock() + math.random(2, 5)
-			fishingState:FireClient(player, "WaitingForBite", "Esperando una picada...")
+		elseif cast.status == "Flying" then
+			local distance = (cast.part.Position - cast.origin).Magnitude
+			local water = workspace:FindFirstChild("FishingWater")
+			local rayParams = RaycastParams.new()
+			rayParams.FilterType = Enum.RaycastFilterType.Exclude
+			rayParams.FilterDescendantsInstances = {cast.part, player.Character}
+			local groundHit = workspace:Raycast(cast.part.Position, Vector3.new(0, -3, 0), rayParams)
+
+			if isPointInsideWater(cast.part.Position) then
+				cast.status = "WaitingForBite"
+				cast.biteAt = os.clock() + math.random(2, 5)
+				fishingState:FireClient(player, "WaitingForBite", "Esperando una picada...")
+			elseif distance > RodConfig.Line.MaxLength or (groundHit and groundHit.Instance ~= water) then
+				clearCast(player, "El señuelo cayó fuera del agua")
+			end
 		elseif cast.status == "WaitingForBite" and cast.biteAt and os.clock() >= cast.biteAt then
 			cast.status = "Hooked"
 			cast.tension = 0.25
