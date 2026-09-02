@@ -64,6 +64,7 @@ namespace CanaryFishing.Fishing
 
         public FishingRodState State { get; private set; } = FishingRodState.Idle;
         public float CurrentTension => currentTension;
+        public float MaxTension => maxTension;
         public float ReelInput => reelInput;
         public float FishPullForce => fishPullForce;
 
