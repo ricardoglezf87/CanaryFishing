@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local mouse = player:GetMouse()
+local keyboard = game:GetService("UserInputService")
 
 -- El prototipo usa primera persona desde el inicio.
 player.CameraMode = Enum.CameraMode.LockFirstPerson
@@ -73,8 +74,12 @@ mouse.Button1Up:Connect(function()
 	castRequest:FireServer(alpha)
 end)
 
-mouse.KeyDown:Connect(function(key)
-	if key:lower() == "r" then
+keyboard.InputBegan:Connect(function(key, gameProcessed)
+	if(gameProcessed) then 
+		return
+	end
+	
+	if key.KeyCode == Enum.KeyCode.R then
 		reelRequest:FireServer()
 	end
 end)
