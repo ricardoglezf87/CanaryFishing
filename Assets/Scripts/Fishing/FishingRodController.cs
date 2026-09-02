@@ -72,6 +72,11 @@ namespace CanaryFishing.Fishing
 
         public void Initialize(Transform targetCastPoint, Rigidbody targetLure)
         {
+            if (reelSpeed <= 0f) reelSpeed = 6f;
+            if (reelForcePerSpeed <= 0f) reelForcePerSpeed = 1.25f;
+            if (maxTension <= 0f) maxTension = 20f;
+            if (maxTensionDuration <= 0f) maxTensionDuration = 2f;
+            if (tensionSmoothing <= 0f) tensionSmoothing = 10f;
             castPoint = targetCastPoint;
             lureRigidbody = targetLure;
         }

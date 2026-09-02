@@ -249,7 +249,7 @@ namespace CanaryFishing.Fishing
             if (water != null)
             {
                 water.localScale = Vector3.one;
-                Material waterMaterial = CreateMaterial(Color.white, "Fishing/Textures/AtlanticWater_Albedo", 7f, 0.82f);
+                Material waterMaterial = CreateMaterial(Color.white, "Fishing/Textures/AtlanticWater_Albedo", 3f, 0.82f);
                 if (waterMaterial.HasProperty("_Metallic")) waterMaterial.SetFloat("_Metallic", 0.05f);
                 ApplyMaterial(water, waterMaterial);
             }
@@ -262,7 +262,7 @@ namespace CanaryFishing.Fishing
             GameObject beach = Instantiate(beachAsset);
             beach.name = "Canary Beach Model";
             beach.transform.position = new Vector3(0f, -3.08f, -20f);
-            ApplyMaterial(beach.transform, CreateMaterial(Color.white, "Fishing/Textures/CanarySand_Albedo", 10f, 0.18f));
+            ApplyMaterial(beach.transform, CreateMaterial(Color.white, "Fishing/Textures/CanarySand_Albedo", 4f, 0.18f));
         }
 
         private static void ApplyMaterial(Transform root, Material material)
@@ -282,9 +282,18 @@ namespace CanaryFishing.Fishing
             Texture2D texture = string.IsNullOrEmpty(textureResource) ? null : Resources.Load<Texture2D>(textureResource);
             if (texture != null)
             {
+                texture.wrapMode = TextureWrapMode.Repeat;
+                texture.filterMode = FilterMode.Trilinear;
+                texture.anisoLevel = 8;
                 material.mainTexture = texture;
                 material.mainTextureScale = Vector2.one * tiling;
+                if (material.HasProperty("_BaseMap"))
+                {
+                    material.SetTexture("_BaseMap", texture);
+                    material.SetTextureScale("_BaseMap", Vector2.one * tiling);
+                }
             }
+            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
             if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", smoothness);
             return material;
         }

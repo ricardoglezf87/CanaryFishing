@@ -15,6 +15,6 @@ MonoBehaviour:
   fishName: Demo Bass
   weight: 2.5
   pullForce: 14
-  stamina: 100
+  stamina: 35
   preferredDepth: 2
   biteProbability: 0.8

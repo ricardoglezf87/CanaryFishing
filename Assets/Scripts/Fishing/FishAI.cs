@@ -50,6 +50,7 @@ namespace CanaryFishing.Fishing
         private float biteTimer;
         private float fightTimer;
         private float currentPullForce;
+        private Rigidbody lureRigidbody;
 
         public event Action<FishData> OnFishCaughtEvent;
 
@@ -60,12 +61,31 @@ namespace CanaryFishing.Fishing
 
         public void Initialize(FishData data, FishingRodController rod, Transform targetLure, Rigidbody body)
         {
+            ApplyRuntimeDefaults();
             fishData = data;
             fishingRod = rod;
             lure = targetLure;
             fishRigidbody = body;
+            lureRigidbody = targetLure != null ? targetLure.GetComponent<Rigidbody>() : null;
             remainingStamina = data != null ? data.Stamina : 0f;
             currentPullForce = data != null ? data.PullForce : 0f;
+        }
+
+        private void ApplyRuntimeDefaults()
+        {
+            if (depthTolerance <= 0f) depthTolerance = 1f;
+            if (attractionDistance <= 0f) attractionDistance = 1.5f;
+            if (attractionSpeed <= 0f) attractionSpeed = 1f;
+            if (biteCheckInterval <= 0f) biteCheckInterval = 0.5f;
+            if (fightImpulse <= 0f) fightImpulse = 1.4f;
+            if (fightImpulseInterval <= 0f) fightImpulseInterval = 1.1f;
+            if (staminaDrainPerSecond <= 0f) staminaDrainPerSecond = 18f;
+            if (exhaustedThreshold <= 0f) exhaustedThreshold = 0.1f;
+            if (exhaustedPullMultiplier <= 0f) exhaustedPullMultiplier = 0.25f;
+            if (catchDistance <= 0f) catchDistance = 2f;
+            if (maxHookDistance <= 0f) maxHookDistance = 1.25f;
+            if (hookedFollowSpeed <= 0f) hookedFollowSpeed = 5f;
+            if (maxSwimSpeed <= 0f) maxSwimSpeed = 4f;
         }
 
         private void Awake()
@@ -237,6 +257,10 @@ namespace CanaryFishing.Fishing
             if (fishRigidbody != null)
             {
                 fishRigidbody.AddForce(impulseDirection * fightImpulse, ForceMode.Impulse);
+            }
+            if (lureRigidbody != null && fishingRod != null && fishingRod.ReelInput <= 0f)
+            {
+                lureRigidbody.AddForce(impulseDirection * fightImpulse * 0.35f, ForceMode.Impulse);
             }
         }
 
