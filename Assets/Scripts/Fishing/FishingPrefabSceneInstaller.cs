@@ -135,6 +135,9 @@ namespace CanaryFishing.Fishing
             Canvas canvas = target.GetComponent<Canvas>();
             if (canvas == null) canvas = target.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            target.transform.position = Vector3.zero;
+            target.transform.rotation = Quaternion.identity;
+            target.transform.localScale = Vector3.one;
             GetOrAdd<CanvasScaler>(target);
             GetOrAdd<GraphicRaycaster>(target);
         }

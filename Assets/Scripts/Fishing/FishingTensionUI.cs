@@ -72,6 +72,10 @@ namespace CanaryFishing.Fishing
                 gameObject.AddComponent<CanvasScaler>();
                 gameObject.AddComponent<GraphicRaycaster>();
             }
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.transform.position = Vector3.zero;
+            canvas.transform.rotation = Quaternion.identity;
+            canvas.transform.localScale = Vector3.one;
 
             if (tensionText == null) tensionText = CreateText(canvas.transform, "Tensión: 0 / 20", new Vector2(20f, -20f));
             if (stateText == null) stateText = CreateText(canvas.transform, "Estado: Idle", new Vector2(20f, -55f));
