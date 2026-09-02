@@ -30,6 +30,9 @@ namespace CanaryFishing.Fishing
             GetOrAdd<FishingLineRenderer>(rodObject);
             GameObject lureObject = Spawn(lurePrefab, "Fishing Lure");
             GameObject water = Spawn(waterPrefab, "Water");
+            // La superficie queda por debajo de la boya y el pez para que la demo
+            // sea visible con el material opaco de prueba.
+            water.transform.position = new Vector3(0f, -3f, 6f);
             Rigidbody lureBody = lureObject.GetComponent<Rigidbody>();
             if (lureBody == null) lureBody = lureObject.AddComponent<Rigidbody>();
             lureBody.useGravity = false;
@@ -60,6 +63,7 @@ namespace CanaryFishing.Fishing
             FishingInventoryUI inventoryUI = FindAnyObjectByType<FishingInventoryUI>();
             PlayerInventory inventory = GetOrAdd<PlayerInventory>(Spawn(inventoryPrefab, "Player Inventory"));
             FishingSessionController session = GetOrAdd<FishingSessionController>(Spawn(sessionPrefab, "Fishing Session"));
+            FishingRuntimeHUD runtimeHUD = GetOrAdd<FishingRuntimeHUD>(gameObject);
 
             session?.Initialize(rod, fish, input, tensionUI, inventoryUI, inventory);
             EnsureVisual(rodObject, PrimitiveType.Cylinder, new Color(0.15f, 0.08f, 0.03f), new Vector3(0.08f, 2f, 0.08f));
@@ -75,6 +79,9 @@ namespace CanaryFishing.Fishing
             ConfigureCamera();
             tensionUI?.Initialize(rod);
             inventoryUI?.Initialize(inventory);
+            runtimeHUD.Initialize(rod, inventory);
+            Canvas hudCanvas = hudObject.GetComponent<Canvas>();
+            if (hudCanvas != null) hudCanvas.enabled = false;
         }
 
         private GameObject Spawn(GameObject prefab, string fallbackName)
