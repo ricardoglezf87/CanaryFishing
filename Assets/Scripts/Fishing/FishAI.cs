@@ -55,6 +55,16 @@ namespace CanaryFishing.Fishing
         public float RemainingStamina => remainingStamina;
         public float CurrentPullForce => currentPullForce;
 
+        public void Initialize(FishData data, FishingRodController rod, Transform targetLure, Rigidbody body)
+        {
+            fishData = data;
+            fishingRod = rod;
+            lure = targetLure;
+            fishRigidbody = body;
+            remainingStamina = data != null ? data.Stamina : 0f;
+            currentPullForce = data != null ? data.PullForce : 0f;
+        }
+
         private void Awake()
         {
             remainingStamina = fishData != null ? fishData.Stamina : 0f;

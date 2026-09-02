@@ -68,6 +68,12 @@ namespace CanaryFishing.Fishing
         public float ReelInput => reelInput;
         public float FishPullForce => fishPullForce;
 
+        public void Initialize(Transform targetCastPoint, Rigidbody targetLure)
+        {
+            castPoint = targetCastPoint;
+            lureRigidbody = targetLure;
+        }
+
         private void Update()
         {
             if (State == FishingRodState.Casting)

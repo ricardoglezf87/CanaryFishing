@@ -22,5 +22,18 @@ namespace CanaryFishing.Fishing
         public float Stamina => stamina;
         public float PreferredDepth => preferredDepth;
         public float BiteProbability => biteProbability;
+
+        public static FishData CreateDemo(string species, float fishWeight, float force, float fishStamina,
+            float depth, float probability)
+        {
+            FishData data = CreateInstance<FishData>();
+            data.fishName = species;
+            data.weight = fishWeight;
+            data.pullForce = force;
+            data.stamina = fishStamina;
+            data.preferredDepth = depth;
+            data.biteProbability = probability;
+            return data;
+        }
     }
 }
