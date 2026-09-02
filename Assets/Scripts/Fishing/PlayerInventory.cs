@@ -16,13 +16,14 @@ namespace CanaryFishing.Fishing
     public sealed class PlayerInventory : MonoBehaviour
     {
         [SerializeField] private List<FishInventoryEntry> catches = new List<FishInventoryEntry>();
+        private readonly HashSet<FishAI> subscribedFish = new HashSet<FishAI>();
 
         public IReadOnlyList<FishInventoryEntry> Catches => catches;
         public event Action<FishData, FishInventoryEntry> OnInventoryChanged;
 
         public void Subscribe(FishAI fishAI)
         {
-            if (fishAI != null)
+            if (fishAI != null && subscribedFish.Add(fishAI))
             {
                 fishAI.OnFishCaughtEvent += AddFish;
             }
@@ -30,7 +31,7 @@ namespace CanaryFishing.Fishing
 
         public void Unsubscribe(FishAI fishAI)
         {
-            if (fishAI != null)
+            if (fishAI != null && subscribedFish.Remove(fishAI))
             {
                 fishAI.OnFishCaughtEvent -= AddFish;
             }

@@ -37,7 +37,7 @@ namespace CanaryFishing.Fishing
                 ? (rod.CastPoint != null ? rod.CastPoint : CreateDefaultCastPoint(rod.transform))
                 : null;
             rod?.Initialize(castPoint, lureBody);
-            rod?.GetComponent<FishingLineRenderer>()?.Initialize(rod.transform, lureObject.transform);
+            rod?.GetComponent<FishingLineRenderer>()?.Initialize(castPoint, lureObject.transform);
 
             GameObject fishObject = Spawn(fishPrefab, "Fish");
             FishAI fish = GetOrAdd<FishAI>(fishObject);
@@ -53,6 +53,7 @@ namespace CanaryFishing.Fishing
 
             FishingInputController input = GetOrAdd<FishingInputController>(Spawn(inputPrefab, "Fishing Input"));
             GameObject hudObject = Spawn(hudPrefab, "Fishing HUD");
+            hudObject.SetActive(true);
             EnsureCanvas(hudObject);
             FishingTensionUI tensionUI = GetOrAdd<FishingTensionUI>(hudObject);
             GetOrAdd<FishingInventoryUI>(hudObject);
@@ -62,10 +63,18 @@ namespace CanaryFishing.Fishing
 
             session?.Initialize(rod, fish, input, tensionUI, inventoryUI, inventory);
             EnsureVisual(rodObject, PrimitiveType.Cylinder, new Color(0.15f, 0.08f, 0.03f), new Vector3(0.08f, 2f, 0.08f));
+            Transform rodVisual = rodObject.transform.Find("Visual");
+            if (rodVisual != null)
+            {
+                rodVisual.localPosition = new Vector3(0f, -1.5f, 0.5f);
+                rodVisual.localRotation = Quaternion.Euler(-65f, 0f, 0f);
+            }
             EnsureVisual(lureObject, PrimitiveType.Sphere, Color.yellow, Vector3.one * 0.25f);
             EnsureVisual(fish != null ? fish.gameObject : null, PrimitiveType.Sphere, new Color(0.9f, 0.25f, 0.1f), new Vector3(1.2f, 0.5f, 2f));
             EnsureVisual(water, PrimitiveType.Cube, new Color(0.05f, 0.3f, 0.55f), new Vector3(24f, 0.5f, 24f));
             ConfigureCamera();
+            tensionUI?.Initialize(rod);
+            inventoryUI?.Initialize(inventory);
         }
 
         private GameObject Spawn(GameObject prefab, string fallbackName)
@@ -179,7 +188,7 @@ namespace CanaryFishing.Fishing
             Camera camera = Camera.main;
             if (camera == null) return;
             camera.transform.position = new Vector3(0f, 3f, -8f);
-            camera.transform.rotation = Quaternion.Euler(12f, 0f, 0f);
+            camera.transform.LookAt(new Vector3(0f, -1f, 4f));
         }
     }
 }

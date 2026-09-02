@@ -11,11 +11,14 @@ namespace CanaryFishing.Fishing
         [SerializeField] private Text tensionText;
         [SerializeField] private Text stateText;
         [SerializeField] private GameObject overloadWarning;
+        private FishingRodController subscribedRod;
 
         public void Initialize(FishingRodController rod)
         {
             EnsureControls();
             if (rod == null) return;
+            if (subscribedRod != null) return;
+            subscribedRod = rod;
             rod.OnTensionChanged += UpdateTension;
             rod.OnStateChanged += UpdateState;
             rod.OnLineBreak += ShowLineBreak;

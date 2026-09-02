@@ -7,11 +7,14 @@ namespace CanaryFishing.Fishing
     public sealed class FishingInventoryUI : MonoBehaviour
     {
         [SerializeField] private Text catchesText;
+        private PlayerInventory subscribedInventory;
 
         public void Initialize(PlayerInventory inventory)
         {
             EnsureText();
             if (inventory == null) return;
+            if (subscribedInventory != null) return;
+            subscribedInventory = inventory;
             inventory.OnInventoryChanged += HandleInventoryChanged;
             Refresh(inventory);
         }
