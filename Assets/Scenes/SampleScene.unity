@@ -434,7 +434,7 @@ GameObject:
   - component: {fileID: 950000002}
   - component: {fileID: 950000003}
   m_Layer: 0
-  m_Name: Fishing Demo Bootstrap
+  m_Name: Fishing Prefab Installer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

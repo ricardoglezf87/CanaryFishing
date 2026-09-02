@@ -40,6 +40,11 @@ namespace CanaryFishing.Fishing
             Rigidbody fishBody = fish != null ? fish.GetComponent<Rigidbody>() : null;
             if (fishBody == null && fish != null) fishBody = fish.gameObject.AddComponent<Rigidbody>();
             if (fishBody != null) fishBody.useGravity = false;
+            if (fishData == null)
+            {
+                fishData = FishData.CreateDemo("Demo Bass", 2.5f, 14f, 100f, 2f, 0.8f);
+                Debug.LogWarning($"{name}: no hay FishData asignado; se usa Demo Bass.");
+            }
             fish?.Initialize(fishData, rod, lureObject.transform, fishBody);
 
             FishingInputController input = Spawn(inputPrefab, "Fishing Input").GetComponent<FishingInputController>();
@@ -58,11 +63,45 @@ namespace CanaryFishing.Fishing
         {
             if (prefab == null)
             {
-                Debug.LogError($"{name}: falta asignar el prefab '{fallbackName}' en el Inspector.");
-                return new GameObject(fallbackName);
+                Debug.LogWarning($"{name}: prefab '{fallbackName}' no está asignado; se crea un fallback de prueba.");
+                return CreateRuntimeFallback(fallbackName);
             }
 
             return Instantiate(prefab);
+        }
+
+        private static GameObject CreateRuntimeFallback(string objectName)
+        {
+            GameObject result = new GameObject(objectName);
+            switch (objectName)
+            {
+                case "Fishing Rod":
+                    result.transform.position = new Vector3(0f, 1f, -1f);
+                    result.AddComponent<FishingRodController>();
+                    result.AddComponent<FishingLineRenderer>();
+                    break;
+                case "Fishing Lure":
+                    result.transform.position = new Vector3(0f, -2f, 4f);
+                    Rigidbody lureBody = result.AddComponent<Rigidbody>();
+                    lureBody.useGravity = false;
+                    break;
+                case "Fish":
+                    result.transform.position = new Vector3(0f, -2f, 8f);
+                    Rigidbody fishBody = result.AddComponent<Rigidbody>();
+                    fishBody.useGravity = false;
+                    result.AddComponent<FishAI>();
+                    break;
+                case "Fishing Input": result.AddComponent<FishingInputController>(); break;
+                case "Fishing HUD":
+                    result.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+                    result.AddComponent<FishingTensionUI>();
+                    result.AddComponent<FishingInventoryUI>();
+                    break;
+                case "Player Inventory": result.AddComponent<PlayerInventory>(); break;
+                case "Fishing Session": result.AddComponent<FishingSessionController>(); break;
+                case "Water": result.transform.position = new Vector3(0f, -0.5f, 6f); break;
+            }
+            return result;
         }
 
         private static void EnsureVisual(GameObject target, PrimitiveType type, Color color, Vector3 scale)
