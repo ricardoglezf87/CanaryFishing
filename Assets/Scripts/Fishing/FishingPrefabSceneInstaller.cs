@@ -31,7 +31,7 @@ namespace CanaryFishing.Fishing
             if (lureBody == null) lureBody = lureObject.AddComponent<Rigidbody>();
             lureBody.useGravity = false;
             Transform castPoint = rod != null
-                ? (rod.CastPoint != null ? rod.CastPoint : rod.transform)
+                ? (rod.CastPoint != null ? rod.CastPoint : CreateDefaultCastPoint(rod.transform))
                 : null;
             rod?.Initialize(castPoint, lureBody);
             rod?.GetComponent<FishingLineRenderer>()?.Initialize(rod.transform, lureObject.transform);
@@ -75,6 +75,14 @@ namespace CanaryFishing.Fishing
             Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             material.color = color;
             visual.GetComponent<Renderer>().sharedMaterial = material;
+        }
+
+        private static Transform CreateDefaultCastPoint(Transform rodTransform)
+        {
+            GameObject point = new GameObject("Cast Point");
+            point.transform.SetParent(rodTransform, false);
+            point.transform.localPosition = new Vector3(0f, -3f, 1f);
+            return point.transform;
         }
     }
 }
