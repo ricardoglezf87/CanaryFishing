@@ -40,11 +40,14 @@ namespace CanaryFishing.Fishing
             if (line != null) return;
             line = GetComponent<LineRenderer>();
             if (line == null) line = gameObject.AddComponent<LineRenderer>();
+            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            line.sharedMaterial = new Material(shader);
             line.positionCount = 2;
             line.startWidth = lineWidth;
             line.endWidth = lineWidth;
-            line.startColor = lineColor;
-            line.endColor = lineColor;
+            line.startColor = new Color(0.82f, 0.86f, 0.88f, 0.9f);
+            line.endColor = new Color(0.65f, 0.7f, 0.72f, 0.75f);
             line.useWorldSpace = true;
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;

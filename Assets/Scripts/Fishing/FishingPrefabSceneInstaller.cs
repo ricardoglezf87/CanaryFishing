@@ -76,6 +76,8 @@ namespace CanaryFishing.Fishing
             }
             EnsureVisual(lureObject, PrimitiveType.Sphere, Color.yellow, Vector3.one * 0.25f);
             EnsureVisual(fish != null ? fish.gameObject : null, PrimitiveType.Sphere, new Color(0.9f, 0.25f, 0.1f), new Vector3(1.2f, 0.5f, 2f));
+            PolishLureVisual(lureObject);
+            PolishFishVisual(fishObject);
             EnsureVisual(water, PrimitiveType.Cube, new Color(0.05f, 0.3f, 0.55f), new Vector3(24f, 0.5f, 24f));
             ConfigureCamera();
             ConfigureFirstPersonPoint(castPoint);
@@ -210,7 +212,7 @@ namespace CanaryFishing.Fishing
             Camera camera = Camera.main;
             if (camera == null || castPoint == null) return;
             castPoint.SetParent(camera.transform, false);
-            castPoint.localPosition = new Vector3(0.35f, -0.15f, 0.85f);
+            castPoint.localPosition = new Vector3(0.08f, 1.9f, 1.35f);
             castPoint.localRotation = Quaternion.identity;
         }
 
@@ -218,18 +220,78 @@ namespace CanaryFishing.Fishing
         {
             Camera camera = Camera.main;
             if (camera == null) return;
-            rodVisual.SetParent(camera.transform, false);
-            rodVisual.localPosition = new Vector3(0.38f, -0.38f, 0.8f);
-            rodVisual.localRotation = Quaternion.Euler(-68f, 0f, 0f);
-            rodVisual.localScale = new Vector3(0.045f, 2.2f, 0.045f);
 
-            GameObject reel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            reel.name = "Reel Visual";
-            reel.transform.SetParent(camera.transform, false);
-            reel.transform.localPosition = new Vector3(0.2f, -0.2f, 0.85f);
-            reel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            reel.transform.localScale = new Vector3(0.18f, 0.08f, 0.18f);
-            SetMaterial(reel, new Color(0.08f, 0.1f, 0.12f));
+            // Los cilindros de Unity crecen sobre su eje Y. Por eso una caña
+            // visualmente vertical usa Y=180 y una ligera inclinación en Z,
+            // en lugar de girarla 90 grados y dejarla horizontal.
+            rodVisual.SetParent(camera.transform, false);
+            rodVisual.name = "Rod Handle";
+            rodVisual.localPosition = new Vector3(0.55f, -0.48f, 0.95f);
+            rodVisual.localRotation = Quaternion.Euler(0f, 180f, 8f);
+            rodVisual.localScale = new Vector3(0.055f, 0.45f, 0.055f);
+            SetMaterial(rodVisual.gameObject, new Color(0.16f, 0.07f, 0.025f));
+
+            CreateVisualPart(camera.transform, PrimitiveType.Cylinder, "Rod Lower Section",
+                new Vector3(0.43f, 0.28f, 1.08f), new Vector3(0.03f, 0.75f, 0.03f),
+                Quaternion.Euler(0f, 180f, 8f), new Color(0.055f, 0.075f, 0.065f));
+            CreateVisualPart(camera.transform, PrimitiveType.Cylinder, "Rod Upper Section",
+                new Vector3(0.23f, 1.48f, 1.25f), new Vector3(0.016f, 0.62f, 0.016f),
+                Quaternion.Euler(0f, 180f, 10f), new Color(0.035f, 0.05f, 0.045f));
+
+            CreateVisualPart(camera.transform, PrimitiveType.Cylinder, "Reel Spool",
+                new Vector3(0.65f, -0.13f, 0.9f), new Vector3(0.11f, 0.055f, 0.11f),
+                Quaternion.Euler(90f, 0f, 0f), new Color(0.08f, 0.1f, 0.12f));
+            CreateVisualPart(camera.transform, PrimitiveType.Cube, "Reel Arm",
+                new Vector3(0.75f, -0.12f, 0.88f), new Vector3(0.16f, 0.025f, 0.025f),
+                Quaternion.Euler(0f, 0f, -20f), new Color(0.18f, 0.2f, 0.22f));
+        }
+
+        private static void PolishLureVisual(GameObject lure)
+        {
+            if (lure == null) return;
+            Transform body = lure.transform.Find("Visual");
+            if (body != null)
+            {
+                body.localScale = new Vector3(0.12f, 0.16f, 0.12f);
+                SetMaterial(body.gameObject, new Color(0.92f, 0.16f, 0.08f));
+            }
+
+            CreateVisualPart(lure.transform, PrimitiveType.Cylinder, "Float Stem",
+                new Vector3(0f, 0.2f, 0f), new Vector3(0.025f, 0.12f, 0.025f),
+                Quaternion.identity, Color.white);
+        }
+
+        private static void PolishFishVisual(GameObject fish)
+        {
+            if (fish == null) return;
+            Transform body = fish.transform.Find("Visual");
+            if (body != null)
+            {
+                body.localScale = new Vector3(0.42f, 0.22f, 0.7f);
+                SetMaterial(body.gameObject, new Color(0.18f, 0.38f, 0.32f));
+            }
+
+            CreateVisualPart(fish.transform, PrimitiveType.Cube, "Fish Tail",
+                new Vector3(0f, 0f, -0.78f), new Vector3(0.42f, 0.055f, 0.32f),
+                Quaternion.Euler(0f, 45f, 0f), new Color(0.12f, 0.3f, 0.26f));
+            CreateVisualPart(fish.transform, PrimitiveType.Sphere, "Fish Eye",
+                new Vector3(0.25f, 0.1f, 0.42f), Vector3.one * 0.045f,
+                Quaternion.identity, Color.black);
+        }
+
+        private static GameObject CreateVisualPart(Transform parent, PrimitiveType type, string partName,
+            Vector3 localPosition, Vector3 localScale, Quaternion localRotation, Color color)
+        {
+            GameObject part = GameObject.CreatePrimitive(type);
+            part.name = partName;
+            part.transform.SetParent(parent, false);
+            part.transform.localPosition = localPosition;
+            part.transform.localScale = localScale;
+            part.transform.localRotation = localRotation;
+            Collider collider = part.GetComponent<Collider>();
+            if (collider != null) collider.enabled = false;
+            SetMaterial(part, color);
+            return part;
         }
 
         private static void CreateBeachEnvironment(GameObject water)
@@ -267,6 +329,7 @@ namespace CanaryFishing.Fishing
             if (shader == null) shader = Shader.Find("Standard");
             Material material = new Material(shader);
             material.color = color;
+            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", 0.55f);
             return material;
         }
     }
